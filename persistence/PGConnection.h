@@ -9,12 +9,17 @@
 #define PGCONNECTION_H_
 
 #include "DBConnection.h"
+#include <exception>
+
+#include <libpq-fe.h>
 
 namespace WS_PERSISTENCE {
 
 struct DBError: std::exception {
 
 };
+
+
 
 class PGConnection: public WS_PERSISTENCE::CDBConnection {
 public:

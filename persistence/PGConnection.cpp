@@ -6,9 +6,9 @@
  */
 
 #include "PGConnection.h"
-#include <libpq-fe.h>
 #include <stdexcept>
-
+#include "DBConnectionException.h"
+#include <libpq-fe.h>
 
 
 namespace WS_PERSISTENCE {

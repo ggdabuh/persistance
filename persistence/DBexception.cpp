@@ -14,7 +14,7 @@ DBexception::DBexception() {
 
 }
 
-DBexception::~DBexception() {
+DBexception::~DBexception() throw () {
 	// TODO Auto-generated destructor stub
 }
 

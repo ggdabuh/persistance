@@ -18,7 +18,7 @@ CEntity::CEntity() {
 }
 
 CEntity::~CEntity() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
@@ -30,8 +30,21 @@ int CEntityDBDescriptor::Initialize(void)
 }
 
 void CEntityDBDescriptor::AddField(string _fieldName, int _fileType) {
-	new S_Field_Description() {};
-	_fields.push_back()
+	S_Field_Description* desc = new S_Field_Description();
+	*desc = {(int)_fields.size(), _fieldName,_fileType };
+	_fields.push_back(desc);
+}
+
+void CEntityDBDescriptor::SetTable(const string& _tableName) {
+	_table = _tableName;
+}
+
+CEntityDBDescriptor::~CEntityDBDescriptor() {
+	for(vector<S_Field_Description* >::iterator begin = _fields.begin(), end = _fields.end();
+			begin != end;
+			++begin) {
+		delete *begin;
+	}
 }
 
 int CEntityDBDescriptor::LoadTypes(void)

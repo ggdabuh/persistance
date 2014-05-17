@@ -14,7 +14,7 @@ DBConnectionException::DBConnectionException(char const * const message) : messa
 
 }
 
-DBConnectionException::~DBConnectionException() {
+DBConnectionException::~DBConnectionException() throw () {
 	// TODO Auto-generated destructor stub
 }
 

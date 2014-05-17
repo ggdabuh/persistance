@@ -9,13 +9,14 @@
 #define DBCONNECTIONEXCEPTION_H_
 
 #include "DBexception.h"
+#include <string>
 
 namespace WS_PERSISTENCE {
 
 class DBConnectionException: public WS_PERSISTENCE::DBexception {
 public:
 	DBConnectionException(char const * const message);
-	virtual ~DBConnectionException();
+	virtual ~DBConnectionException() throw ();
 
 	virtual const char* what() const throw();
 

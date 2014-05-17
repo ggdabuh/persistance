@@ -15,7 +15,7 @@ namespace WS_PERSISTENCE {
 class DBexception: public std::exception {
 public:
 	DBexception();
-	virtual ~DBexception();
+	virtual ~DBexception() throw ();
 
 };
 

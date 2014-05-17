@@ -6,7 +6,7 @@
  */
 
 #ifdef WIN32
-#include <cstdint>
+#include <stdint.h>
 #else
 #include < >
 #endif
@@ -75,6 +75,8 @@ class CEntityDBDescriptor
 		virtual ~CEntityDBDescriptor();
 
 		void AddField(string _fieldName, int _fileType);
+
+		void SetTable(const string& _tableName);
 
 	private:
 
