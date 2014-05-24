@@ -6,6 +6,8 @@
  */
 
 #include "Entity.hpp"
+#include <stdint.h>
+#include <sstream>
 
 namespace WS_PERSISTENCE {
 
@@ -21,6 +23,10 @@ CEntity::~CEntity() {
 
 }
 
+CEntityDBDescriptor::CEntityDBDescriptor() {
+
+}
+
 
 int CEntityDBDescriptor::Initialize(void)
 {
@@ -30,9 +36,13 @@ int CEntityDBDescriptor::Initialize(void)
 }
 
 void CEntityDBDescriptor::AddField(string _fieldName, int _fileType) {
-	S_Field_Description* desc = new S_Field_Description();
-	*desc = {(int)_fields.size(), _fieldName,_fileType };
+	S_Field_Description desc = {(int)_fields.size(), _fieldName,_fileType };
 	_fields.push_back(desc);
+}
+
+void CEntityDBDescriptor::AddKey(string _fieldName, int _fileType) {
+	S_Field_Description desc = {(int)_keys.size(), _fieldName,_fileType };
+	_keys.push_back(desc);
 }
 
 void CEntityDBDescriptor::SetTable(const string& _tableName) {
@@ -40,11 +50,42 @@ void CEntityDBDescriptor::SetTable(const string& _tableName) {
 }
 
 CEntityDBDescriptor::~CEntityDBDescriptor() {
-	for(vector<S_Field_Description* >::iterator begin = _fields.begin(), end = _fields.end();
-			begin != end;
-			++begin) {
-		delete *begin;
+
+}
+
+string CEntityDBDescriptor::createRequest() {
+
+	//static unsigned int req_id = 0;
+	ostringstream ss;
+	if(_fields.empty()) {
+		throw "_fields.empty()";
 	}
+	if(_keys.empty()) {
+		throw "_keys.empty()";
+	}
+	if(_table.empty()) {
+		throw "_table.empty()";
+	}
+	vector<S_Field_Description>::const_iterator begin = _fields.begin(), end=_fields.end();
+	ss << "SELECT "
+			<< begin->_fieldName;
+	for(++begin; begin != end; ++begin) {
+		ss << ", " << begin->_fieldName;
+	}
+	ss << " FROM " << _table << " WHERE ";
+	int paramNb = 1;
+	begin = _keys.begin(), end=_keys.end();
+	ss << begin->_fieldName << " = $" << paramNb++;
+	for(++begin; begin != end; ++begin) {
+		ss << " AND " << begin->_fieldName << " = $" << paramNb++;
+	}
+
+	return ss.str();
+
+}
+
+const string& CEntityDBDescriptor::getRequestId() {
+
 }
 
 int CEntityDBDescriptor::LoadTypes(void)

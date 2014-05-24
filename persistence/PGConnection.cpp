@@ -15,8 +15,8 @@ namespace WS_PERSISTENCE {
 
 PGConnection::PGConnection() {
 	// TODO Auto-generated constructor stub
-	char const * const  keywords[] = {"hostaddr" , "port", "user"  , "password" };
-	char const * const  vals[] =     {"localhost", "5432", "myUser", "pass" };
+	char const * const  keywords[] = {/*"host",*/     "dbname" , /*"port",*/"user"  , "password", NULL };
+	char const * const  vals[] =     {/*"localhost",*/"mydb"   ,/*"5432",*/ "dbuser", "toto", NULL };
 
 	conn = PQconnectdbParams(keywords, vals, 0);
 

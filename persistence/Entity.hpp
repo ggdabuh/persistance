@@ -5,11 +5,9 @@
  *      Author: juan
  */
 
-#ifdef WIN32
+
 #include <stdint.h>
-#else
-#include < >
-#endif
+
 
 #include <typeinfo>
 #include <vector>
@@ -68,6 +66,8 @@ class CFilter
 ////////////////////////////////////////////////////////////////////////////////
 class CEntityDBDescriptor
 {
+	friend class CEntityDBDescriptorTests;
+
 	public:
 
 		CEntityDBDescriptor();
@@ -76,13 +76,19 @@ class CEntityDBDescriptor
 
 		void AddField(string _fieldName, int _fileType);
 
+		void AddKey(string _fieldName, int _fileType);
+
 		void SetTable(const string& _tableName);
+
+		const string& getRequestId();
 
 	private:
 
-		string _table;
+		string createRequest();
 
-		vector<S_Field_Description* > _fields;
+		string _table, req_id;
+
+		vector<S_Field_Description> _fields, _keys;
 
 		static int Initialize(void);
 		static int LoadTypes(void);
