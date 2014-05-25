@@ -25,6 +25,9 @@ class PGConnection: public WS_PERSISTENCE::CDBConnection {
 public:
 	PGConnection();
 	virtual ~PGConnection();
+	PGconn* connection() {
+		return conn;
+	}
 
 private:
 	PGConnection(const PGConnection&);

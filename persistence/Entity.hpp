@@ -14,6 +14,8 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <string>
+#include <libpq-fe.h>
 
 #include "DBConnection.h"
 
@@ -21,6 +23,7 @@
 #define ENTITY_HPP_
 
 using namespace std;
+
 
 namespace WS_PERSISTENCE {
 
@@ -67,6 +70,7 @@ class CFilter
 class CEntityDBDescriptor
 {
 	friend class CEntityDBDescriptorTests;
+	friend class CEntity;
 
 	public:
 
@@ -80,7 +84,7 @@ class CEntityDBDescriptor
 
 		void SetTable(const string& _tableName);
 
-		const string& getRequestId();
+		const string& getRequestId(PGconn *);
 
 	private:
 
@@ -102,12 +106,12 @@ class CEntity {
 
 	public:
 
-		CEntity();
+		CEntity(CDBConnection*);
 		virtual ~CEntity();
 
 		static vector<CEntity*>* SerializeEntities(CFilter* filter);
 
-		int GenerateBeanData(CEntityDBDescriptor* entityDBDescriptor,
+		void GenerateBeanData(CEntityDBDescriptor* entityDBDescriptor,
 							CDBConnection* dbConnection);
 
 	protected:
@@ -118,7 +122,9 @@ class CEntity {
 	private:
 
 		// map -> field_id, field_value
-		map<int, void*> _BeanData;
+		vector<void*> _BeanData;
+
+		vector<void*> _BeanId;
 
 		CEntityDBDescriptor* _entityDBDescriptor;
 		CDBConnection* _dbConnection;

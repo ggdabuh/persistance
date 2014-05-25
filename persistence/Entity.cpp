@@ -6,15 +6,21 @@
  */
 
 #include "Entity.hpp"
+#include "PGConnection.h"
 #include <stdint.h>
 #include <sstream>
+#include <cstdio>
+#include <stdexcept>
+#include <cstdlib>
+#include <cstring>
+
 
 namespace WS_PERSISTENCE {
 
 map<int, size_t> CEntityDBDescriptor::_typeInfo;
 
 
-CEntity::CEntity() {
+CEntity::CEntity(CDBConnection* conn) : _dbConnection(conn) {
 	// TODO Auto-generated constructor stub
 
 }
@@ -84,7 +90,30 @@ string CEntityDBDescriptor::createRequest() {
 
 }
 
-const string& CEntityDBDescriptor::getRequestId() {
+const string& CEntityDBDescriptor::getRequestId(PGconn * conn) {
+	static unsigned int index = 1;
+	const size_t buffer_size = 40;
+
+	if(req_id.empty()) {
+		char tmp[buffer_size];
+		snprintf(tmp, buffer_size,"PERS%u", index++);
+		PGresult * res = PQprepare(conn,
+		                    tmp,
+		                    createRequest().c_str(),
+		                    _keys.size(),
+		                    NULL);
+		switch(PQresultStatus(res)) {
+		case PGRES_COMMAND_OK:
+			break;
+		default:
+			PQclear(res);
+			throw std::runtime_error("PQprepare failed");
+		}
+		req_id = tmp;
+
+		PQclear(res);
+	}
+	return req_id;
 
 }
 
@@ -100,6 +129,64 @@ int CEntityDBDescriptor::LoadTypes(void)
 	return 0;
 }
 
+void CEntity::GenerateBeanData(CEntityDBDescriptor* entityDBDescriptor,
+		CDBConnection* dbConnection) {
+	PGconn* conn = dynamic_cast<PGConnection&>(*dbConnection).connection();
+	const string& id = entityDBDescriptor->getRequestId(conn);
+
+	vector<char const*> values;
+	vector<int> paramLength, paramFormat;
+	vector<S_Field_Description>::const_iterator begin = entityDBDescriptor->_keys.begin(),
+												end = entityDBDescriptor->_keys.end();
+
+	for(int i = 0;begin!=end;++begin,++i) {
+		if(begin->_fileType == VAR_CHAR) {
+
+			values.push_back(((string*)_BeanId.at(i))->c_str());
+			paramLength.push_back(CEntityDBDescriptor::_typeInfo[begin->_fileType]);
+			paramFormat.push_back(0);
+		} else {
+			values.push_back((char*)_BeanId.at(i));
+			paramLength.push_back(CEntityDBDescriptor::_typeInfo[begin->_fileType]);
+			paramFormat.push_back(1);
+		}
+
+	}
+
+	PGresult * res = PQexecPrepared(conn,
+	                         id.c_str(),
+	                         entityDBDescriptor->_keys.size(),
+	                         values.data(),
+	                         paramLength.data(),
+	                         paramFormat.data(),
+	                         1);
+
+	switch(PQresultStatus(res)) {
+	case PGRES_COMMAND_OK:
+		break;
+	default:
+		PQclear(res);
+		throw std::runtime_error("PQpexec failed");
+	}
+
+	for(unsigned int i=0;i<entityDBDescriptor->_fields.size();++i) {
+		char * ptr = PQgetvalue(res,
+		                 0,
+		                 i);
+
+		void* copy = malloc(CEntityDBDescriptor::_typeInfo[entityDBDescriptor->_fields.at(i)._fileType]);
+		if(entityDBDescriptor->_fields.at(i)._fileType == VAR_CHAR) {
+			string* str = new(copy) string(ptr);
+			_BeanData.push_back(str);
+		} else {
+			memcpy(copy, ptr,CEntityDBDescriptor::_typeInfo[entityDBDescriptor->_fields.at(i)._fileType]);
+			_BeanData.push_back(copy);
+		}
+
+	}
+	PQclear(res);
+
+}
 
 } /* namespace WS_PERSISTENCE */
 /******************************************************************************/
